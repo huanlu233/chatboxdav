@@ -33,8 +33,10 @@ import { webdavIntegration } from ${plugin}
 export default async (env: any) => {
   const config = typeof base === 'function' ? await base(env) : await base
   if (!config.renderer) throw new Error('Upstream renderer build contract changed')
-  config.renderer.plugins = [webdavIntegration(process.cwd(), ${distRoot}), ...(config.renderer.plugins || [])]
-  return config
+  const raw = await config.renderer
+  const renderer = typeof raw === 'function' ? await raw(env) : raw
+  renderer.plugins = [webdavIntegration(process.cwd(), ${distRoot}), ...(renderer.plugins || [])]
+  return { ...config, renderer }
 }
 `)
 writeFileSync(resolve(upstream, 'chatboxdav.vitest.config.ts'), `import base from './vitest.config'

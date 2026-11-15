@@ -55,7 +55,7 @@ export function webdavIntegration(upstream, distributionRoot) {
   const translations = JSON.parse(readFileSync(resolve(distributionRoot, 'integration/translations.json'), 'utf8'))
   return {
     name: 'chatboxdav-integration',
-    enforce: 'pre',
+    enforce: /** @type {'pre'} */ ('pre'),
     buildStart() {
       for (const p of hookPaths) transformSource(readFileSync(resolve(upstream, p), 'utf8'), p, translations)
     },

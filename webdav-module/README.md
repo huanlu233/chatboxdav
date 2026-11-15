@@ -2,8 +2,8 @@
 
 This is a standalone local module for WebDAV protocol handling and its Android
 Capacitor transport. It is intentionally outside the Chatbox source checkout;
-Chatbox imports this package through `link:../webdav-module` instead of copying
-its protocol or native implementation into application source files.
+The distribution build links this package into its generated checkout instead
+of copying protocol or native implementation into upstream source files.
 
 ## Layout
 
@@ -42,9 +42,9 @@ exports selected conversation IDs with settings, copilots and credentials
 disabled, then imports only explicitly selected projects through the host's
 backup bridge. Settings UI and overwrite confirmation remain host concerns.
 
-The Chatbox checkout declares `@local/webdav-module: link:../webdav-module`.
-Its `src/renderer/packages/webdav/client.ts` only supplies the platform transport
-to this package's client; `transport.ts` selects the native or fetch adapter.
+The distribution's preparation script links `@local/webdav-module` without
+modifying Chatbox's package manifest or lockfile. Its WebDAV client adapter only
+supplies the platform transport; `transport.ts` selects the native or fetch adapter.
 Conversation selection, backup inspection, cancellation and partial-import
 reporting remain in the host's existing backup integration.
 
@@ -61,24 +61,20 @@ browser.
 
 ## Verification
 
-Run `pnpm install --frozen-lockfile` and `pnpm test` / `pnpm typecheck` from this
-directory. The real-server smoke test read one 2,846-byte project into memory,
+Run `node scripts/prepare.mjs` and `node scripts/check.mjs` from the distribution
+root. The earlier real-server smoke test read one 2,846-byte project into memory,
 followed the CDN redirect without forwarding Authorization, and received HTTP
 200. It did not import the backup or write its contents to disk.
 
-The module is now wired into the sibling Chatbox checkout. To rebuild from the
-parent folder in PowerShell, load the portable environment first:
+The module is wired into the pristine generated Chatbox checkout. To rebuild
+from the distribution root, load your portable environment first:
 
 ```powershell
-. ./portable-env.ps1
-Set-Location ./chatbox
-node $PortablePnpm install --frozen-lockfile --ignore-scripts
-node $PortablePnpm run build:android-web
-node node_modules/@capacitor/cli/bin/capacitor sync android
-Set-Location ./android
-./gradlew.bat assembleRelease --no-daemon
+node scripts/prepare.mjs
+node scripts/check.mjs
+node scripts/build.mjs
 ```
 
 All tools, caches and build artifacts stay under the parent portable folder.
-Release signing is separate; the local test APK uses the existing portable
-debug certificate, not a production key. No WebDAV credentials are built in.
+Release signing is separate and uses a persistent private production key.
+No WebDAV credentials are built in.
