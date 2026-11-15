@@ -27,7 +27,7 @@ The `Upstream sync and Android release` workflow checks every six hours, on manu
 
 Optional automatic bug repair requires the repository secret `OPENAI_API_KEY`. Without that secret, failed tests are **not** automatically fixed: the workflow blocks and reports them. When enabled, a bounded repair attempt can change only WebDAV code, and all checks run again. This can incur API charges and cannot guarantee detection or repair of every bug. Upstream-core failures are never repaired here.
 
-For an enterprise or private OpenAI deployment, add `OPENAI_RESPONSES_API_ENDPOINT` as a second encrypted repository secret. It is passed only to the Codex Responses API proxy; leaving it unset uses the action's default endpoint. Neither secret is written to the repository, release assets, source files or normal logs. GitHub masks secret values, but anyone who can modify workflows can still write a malicious workflow, so use a dedicated low-privilege, low-quota key and restrict repository write access.
+For an enterprise or private OpenAI deployment, add `OPENAI_RESPONSES_API_ENDPOINT` as a second encrypted repository secret. For Hubway, use the Responses-compatible endpoint supplied by the service (normally `https://hubway.cc/v1/responses`) and verify it in the provider documentation. The workflow requests the `astra` model. The endpoint is passed only to the Codex Responses API proxy; leaving it unset uses the action's default endpoint. Neither secret is written to the repository, release assets, source files or normal logs. GitHub masks secret values, but anyone who can modify workflows can still write a malicious workflow, so use a dedicated low-privilege, low-quota key and restrict repository write access.
 
 Persistent signing secrets:
 
