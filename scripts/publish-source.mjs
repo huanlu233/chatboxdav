@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
-import { repairAllowed } from './guard-repair.mjs'
+import { releasePatchAllowed } from './guard-release-patch.mjs'
 import { root, git, run, manifest } from './common.mjs'
 if (git(['rev-parse', 'HEAD'], root) !== process.env.GITHUB_SHA) throw new Error('Main changed during build; retry without overwriting')
 const patch = readFileSync('dist/candidate.patch', 'utf8')
@@ -8,7 +8,7 @@ if (patch.trim()) {
   const files = execFileSync('git', ['apply', '--numstat', '-z', 'dist/candidate.patch'], { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean)
   for (const stat of files) {
     const path = stat.split('\t').slice(2).join('\t')
-    if (path !== 'upstream.json' && !repairAllowed(path)) throw new Error(`Forbidden release patch: ${path}`)
+    if (path !== 'upstream.json' && !releasePatchAllowed(path)) throw new Error(`Forbidden release patch: ${path}`)
   }
   run('git', ['apply', '--check', 'dist/candidate.patch'])
   run('git', ['apply', 'dist/candidate.patch'])

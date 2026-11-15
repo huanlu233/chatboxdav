@@ -7,7 +7,7 @@ import { transformSource, replaceOnce, hookPaths } from '../integration/plugin.m
 import { root, upstream } from '../scripts/common.mjs'
 import { nextRelease, compare } from '../scripts/update-upstream.mjs'
 import { buildReleaseNotes } from '../scripts/release-notes.mjs'
-import { repairAllowed } from '../scripts/guard-repair.mjs'
+import { releasePatchAllowed } from '../scripts/guard-release-patch.mjs'
 test('upstream releases are integrated sequentially, not skipped or downgraded', () => {
   const releases = ['v1.24.6', 'v1.24.5', 'v1.24.4', 'v1.23.0'].map(tag_name => ({ tag_name }))
   assert.equal(nextRelease(releases, 'v1.24.4').tag_name, 'v1.24.5')
@@ -15,11 +15,11 @@ test('upstream releases are integrated sequentially, not skipped or downgraded',
   assert.equal(nextRelease([{ tag_name: 'v2.0.0', prerelease: true }], 'v1.24.4'), undefined)
   assert.ok(compare('v1.10.0', 'v1.9.0') > 0)
 })
-test('repairs cannot change core, existing tests, workflows or signing', () => {
-  assert.ok(repairAllowed('webdav-module/src/core/client.ts'))
-  assert.ok(repairAllowed('integration/plugin.mjs'))
-  assert.ok(repairAllowed('integration/renderer/packages/webdav/updates.ts'))
-  for (const p of ['src/renderer/App.tsx', '.build/upstream/src/index.ts', 'scripts/sign.mjs', '.github/workflows/release.yml', 'webdav-module/src/core/client.test.ts', 'integration/renderer/../../scripts/build.mjs']) assert.equal(repairAllowed(p), false)
+test('release patches cannot change upstream core, tests, workflows or signing', () => {
+  assert.ok(releasePatchAllowed('webdav-module/src/core/client.ts'))
+  assert.ok(releasePatchAllowed('integration/plugin.mjs'))
+  assert.ok(releasePatchAllowed('integration/renderer/packages/webdav/updates.ts'))
+  for (const p of ['src/renderer/App.tsx', '.build/upstream/src/index.ts', 'scripts/sign.mjs', '.github/workflows/release.yml', 'webdav-module/src/core/client.test.ts', 'integration/renderer/../../scripts/build.mjs']) assert.equal(releasePatchAllowed(p), false)
 })
 test('missing or ambiguous integration anchors block a release', () => {
   assert.throws(() => replaceOnce('a a', 'a', 'b', 'test'))

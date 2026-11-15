@@ -28,7 +28,7 @@ export function buildReleaseNotes({ root, pin, version, upstreamChanged = false,
       ? `WebDAV changes: ${summaries.join('; ')}.`
       : upstreamChanged
         ? `Synchronized Chatbox ${pin.tag} (${pin.commit}) from upstream${previousTag ? ` after ${previousTag} (${previousCommit})` : ''}.`
-        : `Synchronized Chatbox ${pin.tag} (${pin.commit}); no WebDAV production changes were required.`,
+        : `Synchronized Chatbox ${pin.tag} (${pin.commit}); no WebDAV production changes in this release.`,
     '',
     'Android compatibility follows the upstream Capacitor configuration; this build keeps the current minimum Android API level and target SDK. WebDAV, backup/import, upstream compatibility, type, plugin and APK verification passed.',
     'This is an independent distribution and is not an official Chatbox release. APK installation requires confirmation on the device.',
@@ -42,7 +42,7 @@ export function buildReleaseNotes({ root, pin, version, upstreamChanged = false,
       ? `WebDAV 变更：${summaries.join('；')}。`
       : upstreamChanged
         ? `已同步 Chatbox 上游 ${pin.tag}（${pin.commit}）${previousTag ? `，上一版本为 ${previousTag}（${previousCommit}）` : ''}。`
-        : `已同步 Chatbox ${pin.tag}（${pin.commit}），本次没有需要修复的 WebDAV 生产代码。`,
+        : `已同步 Chatbox ${pin.tag}（${pin.commit}），本次没有 WebDAV 生产代码变更。`,
     '',
     'Android 兼容性遵循上游 Capacitor 配置，本次保留当前最低 Android API 级别和 target SDK。WebDAV、备份/导入、上游兼容性、类型检查、插件和 APK 校验均已通过。',
     '这是独立分发版本，并非 Chatbox 官方版本；安装 APK 需要在手机上确认。',
