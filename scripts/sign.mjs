@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { createHash } from 'node:crypto'
+import { execFileSync } from 'node:child_process'
 import { root, run } from './common.mjs'
 const build = JSON.parse(readFileSync(resolve(root, 'dist/build.json'), 'utf8'))
 if (!/^\d+\.\d+\.\d+$/.test(build.distributionVersion)) throw new Error('Invalid build version')
@@ -17,5 +18,7 @@ run(resolve(tools, process.platform === 'win32' ? 'zipalign.exe' : 'zipalign'), 
 run('java', ['-jar', resolve(tools, 'lib/apksigner.jar'), 'sign', '--ks', process.env.SIGNING_KEYSTORE, '--ks-key-alias', process.env.SIGNING_ALIAS, '--ks-pass', 'env:SIGNING_STORE_PASSWORD', '--key-pass', 'env:SIGNING_KEY_PASSWORD', '--out', output, aligned])
 run('java', ['-jar', resolve(tools, 'lib/apksigner.jar'), 'verify', '--verbose', '--print-certs', output])
 run(resolve(tools, process.platform === 'win32' ? 'zipalign.exe' : 'zipalign'), ['-c', '-p', '4', output])
+const badging = execFileSync(resolve(tools, process.platform === 'win32' ? 'aapt.exe' : 'aapt'), ['dump', 'badging', output], { encoding: 'utf8' })
+if (!badging.includes("package: name='xyz.chatboxapp.ce.webdav'") || !badging.includes(`versionCode='${build.versionCode}'`) || !badging.includes(`versionName='${build.distributionVersion}'`)) throw new Error('Signed APK identity/version differs from verified build manifest')
 writeFileSync(resolve(root, 'dist/SHA256SUMS.txt'), `${createHash('sha256').update(readFileSync(output)).digest('hex')}  ${name}\n`)
 console.log(`Signed and verified ${name}`)

@@ -2,6 +2,8 @@
 .local/
 node_modules
 dist/
+webdav-module/android/build/
+webdav-module/android/.gradle/
 *.log
 *.keystore
 *.jks

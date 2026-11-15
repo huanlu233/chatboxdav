@@ -23,6 +23,9 @@ export function transformSource(code, path, translations = {}) {
   } else if (path === 'src/renderer/hooks/useVersion.ts') {
     once('remote.checkNeedUpdate(version, os, config, settings)', 'checkDistributionUpdate(version)')
     code = "import { checkDistributionUpdate } from '@/packages/webdav/updates'\n" + code
+  } else if (path === 'src/renderer/components/DbSchemaGuardDialog.tsx') {
+    once('buildChatboxUrl(`/redirect_app/check_update/${language}`)', 'RELEASES_URL')
+    code = "import { RELEASES_URL } from '@/packages/webdav/updates'\n" + code
   } else if (path === 'src/renderer/routes/about.tsx') {
     const old = 'buildChatboxUrl(`/redirect_app/check_update/${language}`)'
     if (code.split(old).length !== 3) throw new Error('Upstream update-link contract changed')
@@ -48,6 +51,7 @@ export const hookPaths = [
   'src/renderer/app/renderer-backup.ts',
   'src/renderer/hooks/useVersion.ts',
   'src/renderer/routes/about.tsx',
+  'src/renderer/components/DbSchemaGuardDialog.tsx',
 ]
 
 export function webdavIntegration(upstream, distributionRoot) {

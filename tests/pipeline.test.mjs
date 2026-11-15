@@ -35,6 +35,7 @@ test('all pinned upstream hooks remain compatible', { skip: !existsSync(upstream
     assert.ok(transformed && transformed !== original)
     if (path.endsWith('useVersion.ts')) assert.ok(!transformed.includes('remote.checkNeedUpdate('))
     if (path.endsWith('about.tsx')) assert.ok(!transformed.includes('/redirect_app/check_update/'))
+    if (path.endsWith('DbSchemaGuardDialog.tsx')) assert.ok(!transformed.includes('/redirect_app/check_update/'))
     if (path.endsWith('renderer-backup.ts')) assert.ok(transformed.includes('webdavExporter(platform.exporter)'))
   }
 })

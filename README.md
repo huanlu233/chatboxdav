@@ -15,7 +15,7 @@ ChatboxDAV is an independent Android distribution of [Chatbox](https://github.co
 
 - `webdav-module/`: HTTP client, redirect/security logic, Capacitor plugin, isolated tests.
 - `integration/renderer/`: WebDAV dialogs, settings, selective backup/import and distribution update checker.
-- `integration/plugin.mjs`: five fail-closed, in-memory build hooks that call the extension from Settings, the conversation menu, backup delivery and update UI. They do not replace upstream backup algorithms.
+- `integration/plugin.mjs`: six fail-closed, in-memory build hooks that call the extension from Settings, the conversation menu, backup delivery and both update entry points. They do not replace upstream backup algorithms.
 - `scripts/verify-upstream.mjs`: refuses any changed upstream tracked file or mismatched commit.
 - `scripts/guard-repair.mjs`: forbids automatic repair outside WebDAV production sources, including changes to existing tests and release scripts.
 

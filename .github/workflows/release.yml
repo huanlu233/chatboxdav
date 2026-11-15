@@ -163,9 +163,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.build.outputs.version }}
-        run: |
-          git archive --format=tar.gz -o "dist/ChatboxDAV-${VERSION}-source.tar.gz" HEAD
-          gh release create "v${VERSION}" "dist/ChatboxDAV-${VERSION}-android.apk" dist/SHA256SUMS.txt dist/build.json "dist/ChatboxDAV-${VERSION}-source.tar.gz" dist/chatbox-upstream-source.tar.gz --target "$(git rev-parse HEAD)" --title "ChatboxDAV ${VERSION}" --notes "Verified Android build. Source pins and checksums are attached. This distribution is not an official Chatbox release."
+        run: node scripts/release.mjs
   report:
     needs: [build, publish]
     if: always() && (needs.build.result == 'failure' || needs.publish.result == 'failure')
