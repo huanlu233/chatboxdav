@@ -18,6 +18,9 @@ jobs:
     outputs:
       needed: ${{ steps.candidate.outputs.needed }}
       version: ${{ steps.candidate.outputs.version }}
+      upstream_changed: ${{ steps.candidate.outputs.upstream_changed }}
+      previous_tag: ${{ steps.candidate.outputs.previous_tag }}
+      previous_commit: ${{ steps.candidate.outputs.previous_commit }}
     env:
       CI: 'true'
       HUSKY: '0'
@@ -79,6 +82,7 @@ jobs:
         uses: openai/codex-action@1d82a3dba7c7988ec71ecae1ed5b8e8db96495c5
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          responses-api-endpoint: ${{ secrets.OPENAI_RESPONSES_API_ENDPOINT }}
           permission-profile: ':workspace'
           safety-strategy: drop-sudo
           prompt: |
@@ -171,6 +175,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.build.outputs.version }}
+          UPSTREAM_CHANGED: ${{ needs.build.outputs.upstream_changed }}
+          UPSTREAM_PREVIOUS_TAG: ${{ needs.build.outputs.previous_tag }}
+          UPSTREAM_PREVIOUS_COMMIT: ${{ needs.build.outputs.previous_commit }}
         run: node scripts/release.mjs
   report:
     needs: [build, publish]

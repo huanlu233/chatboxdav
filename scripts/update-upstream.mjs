@@ -28,6 +28,8 @@ async function main() {
   const next = nextRelease(releases, pin.tag)
   const latest = await api('repos/huanlu233/chatboxdav/releases/latest', true)
   const needed = !!next || !latest || process.env.FORCE_BUILD === 'true'
+  const previousTag = pin.tag
+  const previousCommit = pin.commit
   if (next) {
     let ref = (await api(`repos/chatboxai/chatbox/git/ref/tags/${encodeURIComponent(next.tag_name)}`)).object
     for (let i = 0; ref.type === 'tag' && i < 5; i++) ref = (await api(`repos/chatboxai/chatbox/git/tags/${ref.sha}`)).object
@@ -43,7 +45,14 @@ async function main() {
     pin.versionCode++
   }
   writeFileSync(resolve(root, 'upstream.json'), JSON.stringify(pin, null, 2) + '\n')
-  if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `needed=${needed}\nversion=${pin.distributionVersion}\n`)
-  console.log(JSON.stringify({ needed, upstream: pin.tag, version: pin.distributionVersion }))
+  if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, [
+    `needed=${needed}`,
+    `version=${pin.distributionVersion}`,
+    `upstream_changed=${next ? 'true' : 'false'}`,
+    `previous_tag=${previousTag}`,
+    `previous_commit=${previousCommit}`,
+    '',
+  ].join('\n'))
+  console.log(JSON.stringify({ needed, upstream: pin.tag, version: pin.distributionVersion, upstreamChanged: !!next, previousTag }))
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) await main()

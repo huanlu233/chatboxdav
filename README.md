@@ -27,6 +27,8 @@ The `Upstream sync and Android release` workflow checks every six hours, on manu
 
 Optional automatic bug repair requires the repository secret `OPENAI_API_KEY`. Without that secret, failed tests are **not** automatically fixed: the workflow blocks and reports them. When enabled, a bounded repair attempt can change only WebDAV code, and all checks run again. This can incur API charges and cannot guarantee detection or repair of every bug. Upstream-core failures are never repaired here.
 
+For an enterprise or private OpenAI deployment, add `OPENAI_RESPONSES_API_ENDPOINT` as a second encrypted repository secret. It is passed only to the Codex Responses API proxy; leaving it unset uses the action's default endpoint. Neither secret is written to the repository, release assets, source files or normal logs. GitHub masks secret values, but anyone who can modify workflows can still write a malicious workflow, so use a dedicated low-privilege, low-quota key and restrict repository write access.
+
 Persistent signing secrets:
 
 ```text
@@ -50,7 +52,7 @@ node scripts/build.mjs
 node scripts/sign.mjs
 ```
 
-Set `PNPM_CLI` to an absolute portable `pnpm.cjs` path when pnpm is not on PATH. All generated upstream files and build outputs are ignored. The Android package ID remains `xyz.chatboxapp.ce.webdav`. Release assets include the APK, checksums, exact build manifest, distribution source and pristine upstream source. No WebDAV account, password, user conversation, local download or private key is part of the repository or APK.
+Set `PNPM_CLI` to an absolute portable `pnpm.cjs` path when pnpm is not on PATH. All generated upstream files and build outputs are ignored. The Android package ID remains `xyz.chatboxapp.ce.webdav`. Android compatibility follows the upstream Capacitor configuration; the current WebDAV native module declares minimum API 23 (Android 6.0), target SDK 35 and compile SDK 35. The build checks these values and stops if a future upstream change makes the WebDAV module internally inconsistent. This is not a claim that every historical Android release is supported. Release assets include the APK, checksums, exact build manifest, distribution source and pristine upstream source. No WebDAV account, password, user conversation, local download or private key is part of the repository or APK.
 
 ## Verification scope
 
