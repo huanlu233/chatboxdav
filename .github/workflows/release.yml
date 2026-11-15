@@ -47,6 +47,9 @@ jobs:
           java-version: '21'
       - uses: android-actions/setup-android@v3
         if: steps.candidate.outputs.needed == 'true'
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
       - name: Install Android platform
         if: steps.candidate.outputs.needed == 'true'
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
@@ -138,6 +141,9 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
       - run: sdkmanager 'build-tools;35.0.0'
       - name: Sign in a clean runner with a stable private key
         env:
