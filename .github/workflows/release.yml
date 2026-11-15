@@ -109,6 +109,11 @@ jobs:
           git diff --exit-code -- scripts tests .github distribution.json package.json LICENSE
           node scripts/guard-repair.mjs verify
           node scripts/verify-upstream.mjs
+      - name: Restore Node.js 22 after Codex action
+        if: steps.repair.outputs.enabled == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Block failed validation without a repair key
         if: steps.checks.outcome == 'failure' && steps.repair.outputs.enabled != 'true'
         run: |
