@@ -1,0 +1,11 @@
+.build/
+.local/
+node_modules/
+dist/
+*.log
+*.keystore
+*.jks
+*.pem
+.env*
+!.env.example
+

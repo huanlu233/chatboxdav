@@ -1,0 +1,18 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'local.webdav.android'
+    compileSdk 35
+
+    defaultConfig {
+        minSdk 23
+        targetSdk 35
+    }
+}
+
+dependencies {
+    implementation project(':capacitor-android')
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+}

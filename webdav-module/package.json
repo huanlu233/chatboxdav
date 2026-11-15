@@ -1,0 +1,28 @@
+{
+  "name": "@local/webdav-module",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./chatbox": "./adapters/chatbox/index.ts",
+    "./android": "./src/adapters/capacitor-android.ts"
+  },
+  "capacitor": {
+    "android": {
+      "src": "android"
+    }
+  },
+  "peerDependencies": {
+    "@capacitor/core": ">=7 <8"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.10"
+  }
+}
