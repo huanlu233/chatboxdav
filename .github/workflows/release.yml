@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['webdav-module/**', 'integration/**', 'scripts/**', 'upstream.json', 'distribution.json', '.github/workflows/release.yml', 'tests/**']
+    paths: ['webdav-module/**', 'integration/**', 'scripts/**', 'upstream.json', 'distribution.json', '.nvmrc', '.github/workflows/release.yml', 'tests/**']
 concurrency:
   group: chatboxdav-release
   cancel-in-progress: false
@@ -13,6 +13,9 @@ permissions:
   contents: read
 jobs:
   build:
+    defaults:
+      run:
+        shell: bash scripts/release-shell.sh {0}
     runs-on: ubuntu-24.04
     timeout-minutes: 75
     outputs:
@@ -31,7 +34,10 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: .nvmrc
+      - name: Remember release Node before other actions change PATH
+        shell: bash
+        run: echo "RELEASE_NODE_BIN=$(dirname "$(command -v node)")" >> "$GITHUB_ENV"
       - id: candidate
         name: Select next stable upstream release
         env:
@@ -55,6 +61,9 @@ jobs:
       - name: Install Android platform
         if: steps.candidate.outputs.needed == 'true'
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Verify Node survives a PATH change
+        if: steps.candidate.outputs.needed == 'true'
+        run: bash tests/release-node.sh
       - name: Assemble pristine upstream with WebDAV extension
         if: steps.candidate.outputs.needed == 'true'
         run: |
@@ -64,7 +73,6 @@ jobs:
         id: checks
         if: steps.candidate.outputs.needed == 'true'
         continue-on-error: true
-        shell: bash
         run: node scripts/validate.mjs 2>&1 | tee .build/check.log
       - name: Verify source ownership and upstream integrity
         if: steps.candidate.outputs.needed == 'true'
@@ -94,6 +102,9 @@ jobs:
           name: failure-diagnostics
           path: .build/check.log
   publish:
+    defaults:
+      run:
+        shell: bash scripts/release-shell.sh {0}
     needs: build
     if: needs.build.outputs.needed == 'true'
     runs-on: ubuntu-24.04
@@ -110,7 +121,10 @@ jobs:
           path: dist
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: .nvmrc
+      - name: Remember release Node before other actions change PATH
+        shell: bash
+        run: echo "RELEASE_NODE_BIN=$(dirname "$(command -v node)")" >> "$GITHUB_ENV"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

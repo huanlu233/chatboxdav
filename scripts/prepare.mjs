@@ -1,8 +1,9 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync, symlinkSync, realpathSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
-import { root, upstream, manifest, run, git, pnpm } from './common.mjs'
+import { root, upstream, manifest, run, git, pnpm, useReleaseNode } from './common.mjs'
 import { hookPaths, transformSource } from '../integration/plugin.mjs'
 
+useReleaseNode()
 const pin = manifest()
 if (!/^v\d+\.\d+\.\d+$/.test(pin.tag) || !/^[a-f0-9]{40}$/.test(pin.commit) || pin.repository !== 'chatboxai/chatbox') throw new Error('Invalid upstream pin')
 mkdirSync(dirname(upstream), { recursive: true })

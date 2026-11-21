@@ -40,7 +40,7 @@ ANDROID_KEY_PASSWORD
 
 ## Local build
 
-Use Node 22, pnpm 10.33.0, JDK 21 and Android SDK platform/build-tools 35. Toolchains and caches can live under a single parent folder; the existing portable environment can be dot-sourced before running these commands. No global installation is required.
+Use the exact Node version in `.nvmrc`, pnpm 10.33.0, JDK 21 and Android SDK platform/build-tools 35. With nvm, run `nvm install` and `nvm use` from this directory. On Windows the existing portable environment can be dot-sourced before building. Check `node --version` against `.nvmrc`. CI restores that Node directory for each build and publish command, even if another action changes PATH. Update `.nvmrc` deliberately when changing the build toolchain.
 
 ```sh
 node scripts/prepare.mjs

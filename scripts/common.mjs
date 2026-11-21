@@ -1,9 +1,17 @@
 import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { delimiter, dirname, resolve } from 'node:path'
 export const root = resolve(import.meta.dirname, '..')
 export const upstream = resolve(root, '.build/upstream')
 export const manifest = () => JSON.parse(readFileSync(resolve(root, 'upstream.json'), 'utf8'))
+export function useReleaseNode() {
+  const expected = readFileSync(resolve(root, '.nvmrc'), 'utf8').trim()
+  if (process.versions.node !== expected) {
+    throw new Error(`This build requires Node ${expected} (.nvmrc); got ${process.versions.node}. Select the release Node before building.`)
+  }
+  // Direct local invocations by absolute path must also pin pnpm's child processes.
+  process.env.PATH = dirname(process.execPath) + delimiter + (process.env.PATH || '')
+}
 export function run(file, args, cwd = root, extra = {}) {
   return execFileSync(file, args, { cwd, stdio: 'inherit', ...extra })
 }

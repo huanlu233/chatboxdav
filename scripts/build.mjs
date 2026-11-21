@@ -1,7 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { createHash } from 'node:crypto'
-import { root, upstream, manifest, pnpm, run } from './common.mjs'
+import { root, upstream, manifest, pnpm, run, useReleaseNode } from './common.mjs'
+useReleaseNode()
 const pin = manifest()
 if (!/^\d+\.\d+\.\d+$/.test(pin.distributionVersion) || !Number.isSafeInteger(pin.versionCode) || pin.versionCode < 3 || pin.versionCode > 2100000000) throw new Error('Invalid Android version')
 process.env.CHATBOX_BUILD_TARGET = 'mobile_app'
