@@ -25,7 +25,7 @@ This is release-pin integration, **not a Git merge that rewrites Chatbox core**.
 
 The `Upstream sync and Android release` workflow checks every six hours, on manual dispatch, and on relevant pushes to `main`. It processes stable upstream versions in ascending order, ignores drafts/prereleases, runs WebDAV, backup and upstream unit tests plus TypeScript checks, builds Android, verifies the unchanged upstream tree, and signs on a separate clean runner. Only a passing build is published. Version names and Android version codes increase together. Failures create a GitHub issue instead of shipping an unchecked APK. Scheduled workflows may need re-enabling after GitHub disables an inactive repository's schedules.
 
-Validation failures block publication and create a GitHub issue with the workflow run details. The workflow does not call an AI service or modify code to repair failures; WebDAV fixes are made and reviewed as ordinary source changes.
+Build or publication failures open a release-blocker issue or update the existing report with the failed run. Only a successful publication closes the bot's blocker; cancelled runs and checks with no release leave it open. If the source pin reached main but its release was not published, a scheduled check retries that version before advancing upstream. The workflow does not call an AI service or modify code to repair failures; WebDAV fixes are made and reviewed as ordinary source changes.
 
 Persistent signing secrets:
 

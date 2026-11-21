@@ -144,16 +144,19 @@ jobs:
         run: node scripts/release.mjs
   report:
     needs: [build, publish]
-    if: always() && (needs.build.result == 'failure' || needs.publish.result == 'failure')
+    if: ${{ !cancelled() && github.ref == 'refs/heads/main' && (needs.build.result == 'failure' || needs.publish.result == 'failure' || needs.publish.result == 'success') }}
     runs-on: ubuntu-24.04
     permissions:
       issues: write
+      contents: read
     steps:
-      - name: Report blocked release without modifying upstream
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Update release blocker after failure or publication
         env:
           GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
+          BUILD_RESULT: ${{ needs.build.result }}
+          PUBLISH_RESULT: ${{ needs.publish.result }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: |
-          count=$(gh issue list --state open --search 'ChatboxDAV release blocked in:title' --json number --jq length)
-          if [ "$count" = '0' ]; then gh issue create --title 'ChatboxDAV release blocked' --body "Tests, compatibility, signing or publication failed. Upstream core was not patched. Details: $RUN_URL"; fi
+        run: node scripts/report-release.mjs

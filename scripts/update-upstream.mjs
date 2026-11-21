@@ -12,6 +12,13 @@ export function nextRelease(releases, current) {
   return releases.filter(r => !r.draft && !r.prerelease && /^v\d+\.\d+\.\d+$/.test(r.tag_name) && compare(r.tag_name, current) > 0)
     .sort((a, b) => compare(a.tag_name, b.tag_name))[0]
 }
+export function releaseCandidate(pin, releases, latest, force) {
+  // Publication can fail after the verified pin was pushed to main. Finish that
+  // version before advancing to another upstream release or version code.
+  const pending = latest && compare(pin.distributionVersion, latest.tag_name) > 0
+  const next = pending ? undefined : nextRelease(releases, pin.tag)
+  return { next, needed: Boolean(pending || next || !latest || force) }
+}
 async function api(path, allow404 = false) {
   const response = await fetch(`https://api.github.com/${path}`, {
     headers: { Accept: 'application/vnd.github+json', ...(process.env.GH_TOKEN ? { Authorization: `Bearer ${process.env.GH_TOKEN}` } : {}) },
@@ -25,9 +32,8 @@ async function main() {
   const pin = manifest()
   const releases = await api('repos/chatboxai/chatbox/releases?per_page=100')
   if (releases.length === 100 && !releases.some(r => r.id === pin.releaseId)) throw new Error('Release history exceeds page; manual review required rather than skipping releases')
-  const next = nextRelease(releases, pin.tag)
   const latest = await api('repos/huanlu233/chatboxdav/releases/latest', true)
-  const needed = !!next || !latest || process.env.FORCE_BUILD === 'true'
+  const { next, needed } = releaseCandidate(pin, releases, latest, process.env.FORCE_BUILD === 'true')
   const previousTag = pin.tag
   const previousCommit = pin.commit
   if (next) {

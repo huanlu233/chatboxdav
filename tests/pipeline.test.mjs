@@ -5,15 +5,45 @@ import { resolve } from 'node:path'
 import { tmpdir } from 'node:os'
 import { transformSource, replaceOnce, hookPaths } from '../integration/plugin.mjs'
 import { root, upstream } from '../scripts/common.mjs'
-import { nextRelease, compare } from '../scripts/update-upstream.mjs'
+import { nextRelease, compare, releaseCandidate } from '../scripts/update-upstream.mjs'
 import { buildReleaseNotes } from '../scripts/release-notes.mjs'
 import { releasePatchAllowed } from '../scripts/guard-release-patch.mjs'
+import { reportRelease } from '../scripts/report-release.mjs'
 test('upstream releases are integrated sequentially, not skipped or downgraded', () => {
   const releases = ['v1.24.6', 'v1.24.5', 'v1.24.4', 'v1.23.0'].map(tag_name => ({ tag_name }))
   assert.equal(nextRelease(releases, 'v1.24.4').tag_name, 'v1.24.5')
   assert.equal(nextRelease(releases, 'v1.24.6'), undefined)
   assert.equal(nextRelease([{ tag_name: 'v2.0.0', prerelease: true }], 'v1.24.4'), undefined)
   assert.ok(compare('v1.10.0', 'v1.9.0') > 0)
+})
+test('a pinned but unpublished release is retried at its existing version', () => {
+  const pin = { tag: 'v1.24.5', distributionVersion: '1.0.5' }
+  const releases = [{ tag_name: 'v1.24.6' }, { tag_name: 'v1.24.5' }]
+  assert.deepEqual(releaseCandidate(pin, releases, { tag_name: 'v1.0.4' }, false), { next: undefined, needed: true })
+  assert.deepEqual(releaseCandidate(pin, releases, { tag_name: 'v1.0.5' }, false), { next: releases[0], needed: true })
+  assert.deepEqual(releaseCandidate(pin, [], { tag_name: 'v1.0.5' }, false), { next: undefined, needed: false })
+})
+test('release failures update the blocker; only a real publication closes it', () => {
+  const calls = []
+  const gh = (...args) => {
+    calls.push(args)
+    if (args[0] === 'api') return '2\n3\n'
+    return ''
+  }
+  const base = { repo: 'huanlu233/chatboxdav', runUrl: 'https://github.com/example/run' }
+  reportRelease({ ...base, build: 'failure', publish: 'skipped' }, gh)
+  assert.deepEqual(calls[1].slice(0, 3), ['issue', 'edit', '2'])
+  assert.ok(calls[1].at(-1).includes(base.runUrl))
+  calls.length = 0
+  reportRelease({ ...base, build: 'success', publish: 'success' }, gh)
+  assert.deepEqual(calls.slice(1).map(call => call.slice(0, 3)), [['issue', 'close', '2'], ['issue', 'close', '3']])
+  calls.length = 0
+  reportRelease({ ...base, build: 'success', publish: 'skipped' }, gh)
+  reportRelease({ ...base, build: 'success', publish: 'cancelled' }, gh)
+  assert.deepEqual(calls, [])
+  reportRelease({ ...base, build: 'success', publish: 'failure' }, (...args) => { calls.push(args); return '' })
+  assert.deepEqual(calls[1].slice(0, 2), ['issue', 'create'])
+  assert.match(calls[1].at(-1), /publish/)
 })
 test('release patches cannot change upstream core, tests, workflows or signing', () => {
   assert.ok(releasePatchAllowed('webdav-module/src/core/client.ts'))
